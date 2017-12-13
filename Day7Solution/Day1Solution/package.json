@@ -1,0 +1,12 @@
+{
+  "name": "day1-solution",
+  "version": "0.0.0",
+  "description": "Day1Solution",
+  "main": "app.js",
+  "author": {
+    "name": "twong"
+  },
+  "devDependencies": {
+    "@types/node": "^6.0.87"
+  }
+}

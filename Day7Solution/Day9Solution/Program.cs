@@ -13,7 +13,7 @@ namespace Day9Solution
             var garbage = false;
             int score = 0, depth = 1, garbageCount = 0;
 
-            for (var i = 0; i < inp.Count(); i++)
+            for (var i = 0; i < inp.Length; i++)
             {
                 var c = inp[i];
                 if (c != '<' && !garbage) { Console.Write(c); }
