@@ -5,121 +5,150 @@ using System.Linq;
 
 namespace Day13Solution
 {
-    class Program
+    /// <summary>
+    /// Solves: http://adventofcode.com/2017/day/13
+    /// </summary>
+    public class Day13
     {
-        static int delay = 0;
-        // key = ending scanner location, value = direction (true = reverse, false = forward)
-        static Dictionary<int, bool>[] firewall = new Dictionary<int, bool>[96];
-
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            var totalPenaltyCost = 1;
-            var input = File.ReadAllLines(@".\Input\Input.txt");
-            var isCaught = true;
+            var test = new Day13();
+            test.Run();
+        }
 
-            while (isCaught)
-            {
-                isCaught = false;
-                var cursorIndex = 0;
-                totalPenaltyCost = 0;
+        public void Run()
+        {
+            Dictionary<int, Scanner> scanners = LoadScannersFromInput();
 
-                //Console.WriteLine($"delay = {delay}");
-                foreach (var line in input)
-                {
-                    var depthRange = line.Split(": ").Select(i => int.Parse(i)).ToArray();
-                    while (cursorIndex <= depthRange[0])
-                    {
-                        var caughtTemp = IsCaught(cursorIndex, depthRange[0], depthRange[1], delay);
-                        if (caughtTemp && !isCaught) isCaught = true;
-                        if (caughtTemp)
-                        {
-                            //Console.WriteLine($"We got caught! Position {cursorIndex}");
-                            totalPenaltyCost += cursorIndex * depthRange[1];
-                        }
+            int severity = RunFirewall(scanners);
+            Console.WriteLine("Part 1 solution: " + severity);
 
-                        cursorIndex++;
-                    }
-                }
-                //Console.WriteLine($"Delay {delay} / StillGotCaught = {isCaught}");
-
-                // Part 1
-                if (delay == 0) Console.WriteLine($"Total Penalty = {totalPenaltyCost}");
-
-                // Part 2
-                if (totalPenaltyCost == 0 && isCaught) Console.WriteLine($"Delay so no penalty = {delay}");
-                delay++;
-            }
-            
+            int delay = FindMinimumCleanFirewallRunDelay(scanners);
+            Console.WriteLine("Part 2 solution: " + delay);
             Console.ReadLine();
         }
 
-        private static bool IsCaught(int cursorIndex, int depth, int range, int delay = 0)
+        private Dictionary<int, Scanner> LoadScannersFromInput()
         {
-            if (cursorIndex < depth)
+            Dictionary<int, Scanner> scanners = new Dictionary<int, Scanner>();
+
+            string[] lines = File.ReadAllLines(".\\Input\\Input.txt");
+            foreach (string line in lines)
             {
-                return false;
+                string[] tokens = line.Split(new char[] { ':', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                int depth = Int32.Parse(tokens[0]);
+                int range = Int32.Parse(tokens[1]);
+                Scanner scanner = new Scanner(range);
+                scanners[depth] = scanner;
             }
-            else
+            return scanners;
+        }
+
+        private int RunFirewall(Dictionary<int, Scanner> scanners)
+        {
+            int severity = 0;
+
+            int maxDepth = scanners.Keys.Max();
+            for (int depth = 0; depth <= maxDepth; depth++)
             {
-                // determine scanner location.  If the scanner ends at position 1, it was at position 0 which is the only way
-                // we get caught
-                var reverse = false;
-                var currentScannerIndex = 0;
-
-                if (delay == 0)
+                // Are we caught at this depth?
+                if (scanners.ContainsKey(depth) && scanners[depth].Position == 0)
                 {
-                    for (var ii = 0; ii <= cursorIndex; ii++)
+                    severity += (depth * scanners[depth].Range);
+                }
+
+                AdvanceScannerPositions(scanners);
+            }
+
+            return severity;
+        }
+
+        private void AdvanceScannerPositions(Dictionary<int, Scanner> scanners)
+        {
+            foreach (Scanner scanner in scanners.Values)
+            {
+                scanner.AdvancePosition();
+            }
+        }
+
+        /// <summary>
+        /// Instead of actually running a simulation as we did in Part 1, this 
+        /// Part 2 solution just directly "does the math" to determine whether,
+        /// at a given time index, a given scanner's position is 0 or not.
+        /// </summary>
+        private int FindMinimumCleanFirewallRunDelay(Dictionary<int, Scanner> scanners)
+        {
+            int delay = 0;
+            while (true)
+            {
+                int maxDepth = scanners.Keys.Max();
+                bool detected = false;
+                for (int depth = 0; depth <= maxDepth; depth++)
+                {
+                    int elapsedTime = delay + depth;
+
+                    if (scanners.ContainsKey(depth))
                     {
-                        //Console.WriteLine($"{ii}) Scanner start = {currentScannerIndex} going {(!reverse ? "forward" : "backward")}");
+                        // The "frequency" is how often a scanner will be at 
+                        // position 0, based on its range, as it moves back and
+                        // forth along the range. For example:
+                        // Range 2: Every 2 turns
+                        // Range 3: Every 4 turns
+                        // Range 4: Every 6 turns
+                        // Range 5: Every 8 turns
+                        // ... and so on.
+                        int frequency = (scanners[depth].Range - 1) * 2;
 
-                        // change direction
-                        if (currentScannerIndex == range - 1)
+                        if (elapsedTime % frequency == 0)
                         {
-                            reverse = true;
+                            detected = true;
+                            break;
                         }
-                        else if (currentScannerIndex == 0)
-                        {
-                            reverse = false;
-                        }
-
-                        //increment
-                        if (reverse) { currentScannerIndex--; }
-                        else { currentScannerIndex++; }
-
-                        //Console.WriteLine($"{ii}) Scanner end = {currentScannerIndex} going {(!reverse ? "forward" : "backward")}");
                     }
-
-                    firewall[cursorIndex].Add(cursorIndex, reverse);
                 }
-                else
+                if (!detected)
                 {
-                    for (var jj = 0; jj < firewall.Length; jj++){
-                        if (firewall[jj].Any())
-                        {
-                            var lastPosition = firewall[jj].First();
-                            firewall[jj].Clear();
-
-                            // change direction
-                            if (lastPosition.Key == range - 1)
-                            {
-                                reverse = true;
-                            }
-                            else if (lastPosition.Key == 0)
-                            {
-                                reverse = false;
-                            }
-
-                            //increment
-                            if (reverse) { firewall[jj].Add(lastPosition.Key - 1, reverse); }
-                            else { firewall[jj].Add(lastPosition.Key - 1, reverse); }
-                        }
-                    }
+                    return delay;
                 }
+                delay++;
+            }
+        }
+    }
 
-                //Console.WriteLine($"Scanner Index ended up at {currentScannerIndex} going {(!reverse ? "forward" : "backward")}");
-                //if (currentScannerIndex == 1 && !reverse) Console.WriteLine($"Scanner {cursorIndex} caught you!");
-                //else Console.WriteLine($"Scanner {cursorIndex} ended on {currentScannerIndex}!");
-                return currentScannerIndex == 1 && !reverse;
+    class Scanner
+    {
+        private readonly int _range;
+
+        public int Range { get { return _range; } }
+        public int Position { get; set; }
+        public bool Direction { get; set; } // Down == true, Up == false
+
+        public Scanner(int range)
+        {
+            this._range = range;
+            Position = 0;
+            Direction = true;
+        }
+
+        public void AdvancePosition()
+        {
+            if (Direction == true) // Down
+            {
+                Position++;
+                if (Position == Range)
+                {
+                    Direction = false;
+                    Position -= 2;
+                }
+            }
+            else // Up
+            {
+                Position--;
+                if (Position < 0)
+                {
+                    Direction = true;
+                    Position += 2;
+                }
             }
         }
     }
