@@ -9,16 +9,68 @@ namespace Day14Solution
     {
         static void Main(string[] args)
         {
+            var masterGrid = new char[128, 128];
             var onCount = 0;
-            for (var ii = 0; ii < 128; ii++)
+            var regionCount = 0;
+
+            for (var y = 0; y < 128; y++)
             {
-                var output = GetHexBinary(GetDenseHash("amgozmfv", ii));
-                onCount +=output.ToCharArray().Count(i => i == '1');
+                var outputArr = GetHexBinary(GetDenseHash("amgozmfv", y)).ToCharArray();
+                onCount += outputArr.Count(i => i == '1');
+
+                // Part 2 store the output in a 2x2 array
+                for(var x = 0; x < 128; x++)
+                {
+                    masterGrid[x, y] = outputArr[x];
+                }
             }
 
             // Part 1
             Console.WriteLine(onCount);
+
+            // Part 2
+            regionCount = FindTotalRegions(ref masterGrid);
+            Console.WriteLine($"Region Count = {regionCount}");
             Console.ReadLine();
+        }
+
+        static int FindTotalRegions(ref char[,] masterGrid)
+        {
+            var retVal = 0;
+
+            for(var y = 0; y < 128; y++)
+            {
+                for (var x = 0; x < 128; x++)
+                {
+                    if (FindRegion(masterGrid, x, y)) { retVal++; }
+                }
+            }
+
+            return retVal;
+        }
+
+        static bool FindRegion(char[,] masterGrid, int startingX, int startingY)
+        {
+            if (startingX >= 0 && startingY >= 0 && 
+                startingX < 128 && startingY < 128 && 
+                masterGrid[startingX, startingY] == '1')
+            {
+                // Mark the current "square"
+                masterGrid[startingX, startingY] = 'x';
+
+                // Look left
+                FindRegion(masterGrid, startingX - 1, startingY);
+                // Look right
+                FindRegion(masterGrid, startingX + 1, startingY);
+                // Look up
+                FindRegion(masterGrid, startingX, startingY - 1);
+                // Look down
+                FindRegion(masterGrid, startingX, startingY + 1);
+
+                return true;
+            }
+
+            return false;
         }
 
         static string GetHexBinary(string hexString)
