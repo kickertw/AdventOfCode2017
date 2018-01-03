@@ -156,6 +156,8 @@ namespace Day18Solution
             Part1Solution(ref lastVal, lines);
             Console.WriteLine($"Last sound played = {lastVal}");
 
+            Console.WriteLine();
+            Console.WriteLine();
             Part2Solution(lines);
 
             Console.ReadLine();
@@ -261,15 +263,19 @@ namespace Day18Solution
 
                 while (runningProgram.Location >= 0 && runningProgram.Location < lines.Length && !runningProgram.IsWaiting)
                 {
-                    
+                    Console.Write(activeProgramIdx + " " + lines[runningProgram.Location] + " / ");
                     var instruction = ParseInstruction(lines[runningProgram.Location], true);
-                    var regSetting = runningProgram.Registry.FirstOrDefault(i => i.Name == instruction.RegName);                    
+                    Register regSetting = null;
 
-                    // Only create the registry setting if the name is a character a-z
-                    if (regSetting == null && !long.TryParse(instruction.RegName, out tempVal) && instruction.RegName != null)
+                    if (!string.IsNullOrEmpty(instruction.RegName))
                     {
-                        regSetting = new Register() { Name = instruction.RegName, Value = activeProgramIdx, LastValuePlayed = null };
-                        runningProgram.Registry.Add(regSetting);
+                        runningProgram.Registry.FirstOrDefault(i => i.Name == instruction.RegName);
+
+                        if (regSetting == null && instruction.RegName != null && !long.TryParse(instruction.RegName, out tempVal))
+                        {
+                            regSetting = new Register() { Name = instruction.RegName, Value = activeProgramIdx, LastValuePlayed = null };
+                            runningProgram.Registry.Add(regSetting);
+                        }
                     }
 
                     switch (instruction.Type)
@@ -299,12 +305,20 @@ namespace Day18Solution
                             {
                                 runningProgram.IsWaiting = true;
                                 SwapRunningProgram(ref activeProgramIdx, ref inactiveProgramIdx);
+                                Console.WriteLine(" Switching to Program " + activeProgramIdx);
                             }
                             break;
                         default:
                             //jump
                             var oldLocation = runningProgram.Location;
-                            runningProgram.Location = regSetting.Jgz(runningProgram.Location, GetRegValue(runningProgram.Registry, instruction.RegVal));
+                            if (regSetting != null)
+                            {
+                                runningProgram.Location = regSetting.Jgz(runningProgram.Location, GetRegValue(runningProgram.Registry, instruction.RegVal));
+                            }
+                            else
+                            {
+                                runningProgram.Location += GetRegValue(runningProgram.Registry, instruction.RegVal);
+                            }
 
                             if (oldLocation == runningProgram.Location)
                             {
@@ -339,14 +353,16 @@ namespace Day18Solution
                 
             };
 
-            if (isPart2 && (retVal.Type == "snd"))
+            if (isPart2 && (retVal.Type == "snd" || retVal.Type == "rcv"))
             {
-                long tempVal = -1;
-                if (!long.TryParse(inputArr[1], out tempVal))
+                if (retVal.Type == "rcv")
                 {
                     retVal.RegName = inputArr[1];
                 }
-                retVal.RegVal = inputArr[1];
+                else
+                {
+                    retVal.RegVal = inputArr[1];
+                }                
             }
             else
             {
