@@ -57,37 +57,6 @@ namespace Day18Solution
         }
     }
 
-    //public class RegisterPart2 : Register
-    //{
-    //    public void SendToQueue(Program program, long val)
-    //    {
-    //        program.InQueue.Enqueue(val);
-    //    }
-
-    //    /// <summary>
-    //    /// Gets value from the queue.
-    //    /// </summary>
-    //    /// <param name="queue"></param>
-    //    /// <param name="registry"></param>
-    //    /// <param name="regName"></param>
-    //    /// <returns>True if queue has a value, false if queue is empty</returns>
-    //    public bool RcvFromQueue(ref Queue<int> queue, List<Register> registry, string regName)
-    //    {
-    //        if (queue.Any())
-    //        {
-    //            var register = registry.FirstOrDefault(i => i.Name == regName);
-
-    //            if (register != null)
-    //            {
-    //                register.Value = queue.Dequeue();
-    //                return true;
-    //            }
-    //        }
-
-    //        return false;
-    //    }
-    //}
-
     public struct Instruction
     {
         public string Type;
@@ -138,6 +107,7 @@ namespace Day18Solution
                 if (register != null)
                 {
                     register.Value = InQueue.Dequeue();
+                    Console.WriteLine($"Register {register.Name} now has value {register.Value}");
                     return true;
                 }
             }
@@ -153,11 +123,9 @@ namespace Day18Solution
             long? lastVal = null;
             string[] lines = File.ReadAllLines(".\\input.txt");
 
-            Part1Solution(ref lastVal, lines);
-            Console.WriteLine($"Last sound played = {lastVal}");
+            //Part1Solution(ref lastVal, lines);
+            //Console.WriteLine($"Last sound played = {lastVal}");
 
-            Console.WriteLine();
-            Console.WriteLine();
             Part2Solution(lines);
 
             Console.ReadLine();
@@ -243,8 +211,18 @@ namespace Day18Solution
             var activeProgramIdx = 0;
             var inactiveProgramIdx = 1;
             var programs = new Program[] { new Program(0), new Program(1) };
-            programs[0].IsWaiting = false;
             programs[1].IsWaiting = true;
+
+            // Initializing Registers
+            foreach(var line in lines)
+            {
+                var inst = ParseInstruction(line, true);
+                if (!long.TryParse(inst.RegName, out tempVal))
+                {
+                    programs[0].Registry.Add(new Register() { Name = inst.RegName, Value = 0, LastValuePlayed = null });
+                    programs[1].Registry.Add(new Register() { Name = inst.RegName, Value = 1, LastValuePlayed = null });
+                }                
+            }
 
             while ((!programs[0].IsWaiting || programs[0].InQueue.Any()) ||
                    (!programs[1].IsWaiting || programs[1].InQueue.Any()))
@@ -259,23 +237,18 @@ namespace Day18Solution
                     return;
                 }
 
+                Console.WriteLine($"Active Program [{activeProgramIdx}]");
                 runningProgram.IsWaiting = false;
 
                 while (runningProgram.Location >= 0 && runningProgram.Location < lines.Length && !runningProgram.IsWaiting)
                 {
-                    Console.Write(activeProgramIdx + " " + lines[runningProgram.Location] + " / ");
+                    Console.Write($"    {runningProgram.Location} {lines[runningProgram.Location]} - ");
                     var instruction = ParseInstruction(lines[runningProgram.Location], true);
                     Register regSetting = null;
 
                     if (!string.IsNullOrEmpty(instruction.RegName))
                     {
-                        runningProgram.Registry.FirstOrDefault(i => i.Name == instruction.RegName);
-
-                        if (regSetting == null && instruction.RegName != null && !long.TryParse(instruction.RegName, out tempVal))
-                        {
-                            regSetting = new Register() { Name = instruction.RegName, Value = activeProgramIdx, LastValuePlayed = null };
-                            runningProgram.Registry.Add(regSetting);
-                        }
+                        regSetting = runningProgram.Registry.FirstOrDefault(i => i.Name == instruction.RegName);
                     }
 
                     switch (instruction.Type)
@@ -322,11 +295,11 @@ namespace Day18Solution
 
                             if (oldLocation == runningProgram.Location)
                             {
-                                Console.WriteLine($"({runningProgram.Location}) - No jumping because val = 0.  Going to the next instruction.");
+                                Console.WriteLine($"({runningProgram.Location}) - No jumping because val <= 0.  Going to the next instruction.");
                             }
                             else
                             {
-                                Console.WriteLine($"({runningProgram.Location}) - Jumping to {runningProgram.Location}");
+                                Console.WriteLine($"({oldLocation}) - Jumping to {runningProgram.Location}");
                                 runningProgram.JustJumped = true;
                             }
                             break;
