@@ -93,6 +93,8 @@ namespace Day21Solution
 
                     for (var ii = 0; ii < rows.Length / 2; ii++)
                     {
+                        newSquareString1.Clear();
+                        newSquareString2.Clear();
                         for (var jj = 0; jj < rows.Length / 2; jj++)
                         {
                             var splitNS = newSquare[lastBlock + jj].Split('/');
@@ -102,7 +104,7 @@ namespace Day21Solution
                         lastBlock += rows.Length / 2;
 
                         newSquareStringFinal.Append(newSquareString1).Append("/").Append(newSquareString2);
-                        if (ii < rows.Length - 1) { newSquareStringFinal.Append("/"); }
+                        if (ii < rows.Length) { newSquareStringFinal.Append("/"); }
                     }
 
                     return newSquareStringFinal.ToString();
@@ -136,6 +138,9 @@ namespace Day21Solution
 
                     for (var ii = 0; ii < rows.Length; ii++)
                     {
+                        newSquareString1.Clear();
+                        newSquareString2.Clear();
+                        newSquareString3.Clear();
                         for (var jj = 0; jj < rows.Length / 3; jj++)
                         {
                             var splitNS = newSquare[lastBlock + jj].Split('/');
@@ -146,7 +151,7 @@ namespace Day21Solution
                         lastBlock += rows.Length / 3;
 
                         newSquareStringFinal.Append(newSquareString1).Append("/").Append(newSquareString2).Append("/").Append(newSquareString3);
-                        if (ii < rows.Length - 1) { newSquareStringFinal.Append("/"); }
+                        if (ii < rows.Length) { newSquareStringFinal.Append("/"); }
                     }
 
                     return newSquareStringFinal.ToString();
