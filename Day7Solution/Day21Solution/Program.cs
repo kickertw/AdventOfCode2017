@@ -40,7 +40,7 @@ namespace Day21Solution
             }
 
             var nextSquare = startingSquare;
-            for (int ii = 0; ii < 2; ii++)
+            for (int ii = 0; ii < 5; ii++)
             {
                 nextSquare = GrowSquare(nextSquare);
 
@@ -52,6 +52,7 @@ namespace Day21Solution
                 Console.WriteLine();
             }
 
+            Console.WriteLine($"There are {nextSquare.Count(i => i == '#')} pixels turned on");
             Console.WriteLine("Press enter to end program...");
             Console.ReadLine();
         }
@@ -90,21 +91,24 @@ namespace Day21Solution
                     StringBuilder newSquareStringFinal = new StringBuilder();
                     StringBuilder newSquareString1 = new StringBuilder();
                     StringBuilder newSquareString2 = new StringBuilder();
+                    StringBuilder newSquareString3 = new StringBuilder();
 
                     for (var ii = 0; ii < rows.Length / 2; ii++)
                     {
                         newSquareString1.Clear();
                         newSquareString2.Clear();
+                        newSquareString3.Clear();
                         for (var jj = 0; jj < rows.Length / 2; jj++)
                         {
                             var splitNS = newSquare[lastBlock + jj].Split('/');
                             newSquareString1.Append(splitNS[0]);
                             newSquareString2.Append(splitNS[1]);
+                            newSquareString3.Append(splitNS[2]);
                         }
                         lastBlock += rows.Length / 2;
 
-                        newSquareStringFinal.Append(newSquareString1).Append("/").Append(newSquareString2);
-                        if (ii < rows.Length) { newSquareStringFinal.Append("/"); }
+                        newSquareStringFinal.Append(newSquareString1).Append("/").Append(newSquareString2).Append("/").Append(newSquareString2);
+                        if (ii < rows.Length / 2 - 1) { newSquareStringFinal.Append("/"); }
                     }
 
                     return newSquareStringFinal.ToString();
@@ -116,7 +120,7 @@ namespace Day21Solution
                     var newSquare = new string[totalSquares];
 
                     // Break up the larger square into smaller ones.  Then grow each smaller square
-                    for (var ii = 0; ii < rows.Length / 3; ii += 2)
+                    for (var ii = 0; ii < rows.Length / 3; ii++)
                     {
                         var firstRowSplit = Split(rows[ii], 3);
                         var secondRowSplit = Split(rows[ii + 1], 3);
@@ -124,7 +128,7 @@ namespace Day21Solution
 
                         for (var jj = 0; jj < rows.Length / 3; jj++)
                         {
-                            newSquare[newSquareIndex++] = GrowSquare(GrowSquare(firstRowSplit[jj] + "/" + secondRowSplit[jj] + "/" + thirdRowSplit[jj]));
+                            newSquare[newSquareIndex++] = GrowSquare(firstRowSplit[jj] + "/" + secondRowSplit[jj] + "/" + thirdRowSplit[jj]);
                         }
                     }
 
@@ -135,23 +139,26 @@ namespace Day21Solution
                     StringBuilder newSquareString1 = new StringBuilder();
                     StringBuilder newSquareString2 = new StringBuilder();
                     StringBuilder newSquareString3 = new StringBuilder();
+                    StringBuilder newSquareString4 = new StringBuilder();
 
-                    for (var ii = 0; ii < rows.Length; ii++)
+                    for (var ii = 0; ii < rows.Length / 3; ii++)
                     {
                         newSquareString1.Clear();
                         newSquareString2.Clear();
                         newSquareString3.Clear();
+                        newSquareString4.Clear();
                         for (var jj = 0; jj < rows.Length / 3; jj++)
                         {
                             var splitNS = newSquare[lastBlock + jj].Split('/');
                             newSquareString1.Append(splitNS[0]);
                             newSquareString2.Append(splitNS[1]);
                             newSquareString3.Append(splitNS[2]);
+                            newSquareString4.Append(splitNS[2]);
                         }
                         lastBlock += rows.Length / 3;
 
-                        newSquareStringFinal.Append(newSquareString1).Append("/").Append(newSquareString2).Append("/").Append(newSquareString3);
-                        if (ii < rows.Length) { newSquareStringFinal.Append("/"); }
+                        newSquareStringFinal.Append(newSquareString1).Append("/").Append(newSquareString2).Append("/").Append(newSquareString3).Append("/").Append(newSquareString4);
+                        if (ii < rows.Length / 3 - 1) { newSquareStringFinal.Append("/"); }
                     }
 
                     return newSquareStringFinal.ToString();
