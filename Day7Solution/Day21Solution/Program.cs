@@ -12,7 +12,8 @@ namespace Day21Solution
 
         static void Main(string[] args)
         {
-            var startingSquare = ".#./..#/###";      
+            var iterations = 18;
+            var startingSquare = ".#./..#/###";
             string[] lines = File.ReadAllLines(".\\input.txt");
 
             // Get instructions and generate matching permutations (should be at most an additional 7)
@@ -23,7 +24,7 @@ namespace Day21Solution
 
                 // Rotate 3 times and add to the instructions
                 var alteredInput = kvp[0];
-                for(var ii = 1; ii < 4; ii++)
+                for (var ii = 1; ii < 4; ii++)
                 {
                     alteredInput = Rotate(alteredInput);
                     AddInstruction(ref instructions, alteredInput, kvp[1]);
@@ -39,17 +40,23 @@ namespace Day21Solution
                 }
             }
 
+            //Reddit Answer Check
+            //RedditAnswerCheck.GrowGrid(lines, iterations);
+
+            // Your answer
             var nextSquare = startingSquare;
-            for (int ii = 0; ii < 5; ii++)
+            for (int ii = 0; ii < iterations; ii++)
             {
                 nextSquare = GrowSquare(nextSquare);
+                Console.WriteLine($"{ii} - There are {nextSquare.Count(i => i == '#')} pixels turned on");
+                // Render The Grid
+                //foreach (var row in nextSquare.Split("/"))
+                //{
+                //    Console.WriteLine(row);
+                //}
 
-                Console.WriteLine("Showing square of size " + nextSquare.Split('/')[0].Length);
-                foreach (var row in nextSquare.Split('/'))
-                {
-                    Console.WriteLine(row);
-                }
-                Console.WriteLine();
+                //Console.WriteLine(nextSquare.Count(i => i == '#'));
+                //Console.WriteLine();
             }
 
             Console.WriteLine($"There are {nextSquare.Count(i => i == '#')} pixels turned on");
@@ -62,6 +69,7 @@ namespace Day21Solution
             var rows = startingSquare.Split('/');
             if (rows.Length <= 3)
             {
+                //Console.WriteLine($"{startingSquare} => {instructions[startingSquare]}");
                 return instructions[startingSquare];
             }
             else
@@ -81,7 +89,8 @@ namespace Day21Solution
 
                         for (var jj = 0; jj < rows.Length / 2; jj++)
                         {
-                            newSquare[newSquareIndex++] = GrowSquare(firstRowSplit[jj] + "/" + secondRowSplit[jj]);
+                            var section = firstRowSplit[jj] + "/" + secondRowSplit[jj];
+                            newSquare[newSquareIndex++] = GrowSquare(section);
                         }
                     }
 
@@ -107,7 +116,7 @@ namespace Day21Solution
                         }
                         lastBlock += rows.Length / 2;
 
-                        newSquareStringFinal.Append(newSquareString1).Append("/").Append(newSquareString2).Append("/").Append(newSquareString2);
+                        newSquareStringFinal.Append(newSquareString1).Append("/").Append(newSquareString2).Append("/").Append(newSquareString3);
                         if (ii < rows.Length / 2 - 1) { newSquareStringFinal.Append("/"); }
                     }
 
@@ -120,7 +129,7 @@ namespace Day21Solution
                     var newSquare = new string[totalSquares];
 
                     // Break up the larger square into smaller ones.  Then grow each smaller square
-                    for (var ii = 0; ii < rows.Length / 3; ii++)
+                    for (var ii = 0; ii < rows.Length; ii += 3)
                     {
                         var firstRowSplit = Split(rows[ii], 3);
                         var secondRowSplit = Split(rows[ii + 1], 3);
@@ -128,7 +137,9 @@ namespace Day21Solution
 
                         for (var jj = 0; jj < rows.Length / 3; jj++)
                         {
-                            newSquare[newSquareIndex++] = GrowSquare(firstRowSplit[jj] + "/" + secondRowSplit[jj] + "/" + thirdRowSplit[jj]);
+                            var section = firstRowSplit[jj] + "/" + secondRowSplit[jj] + "/" + thirdRowSplit[jj];
+                            var newSection = GrowSquare(section);
+                            newSquare[newSquareIndex++] = newSection;
                         }
                     }
 
@@ -153,7 +164,7 @@ namespace Day21Solution
                             newSquareString1.Append(splitNS[0]);
                             newSquareString2.Append(splitNS[1]);
                             newSquareString3.Append(splitNS[2]);
-                            newSquareString4.Append(splitNS[2]);
+                            newSquareString4.Append(splitNS[3]);
                         }
                         lastBlock += rows.Length / 3;
 
@@ -173,7 +184,7 @@ namespace Day21Solution
                 .ToArray();
         }
 
-        static void AddInstruction(ref Dictionary<string,string> instructions, string key, string val)
+        static void AddInstruction(ref Dictionary<string, string> instructions, string key, string val)
         {
             if (!instructions.ContainsKey(key))
             {
@@ -197,7 +208,7 @@ namespace Day21Solution
                 for (var kk = 0; kk < arraySize; kk++)
                 {
                     charRows[jj, kk] = tempArr[kk];
-                }                
+                }
             }
 
             // Add Key
@@ -207,7 +218,7 @@ namespace Day21Solution
             }
             else
             {
-                retVal = charRows[2, 0].ToString() + charRows[1, 0].ToString() + charRows[0, 0].ToString() + "/" + 
+                retVal = charRows[2, 0].ToString() + charRows[1, 0].ToString() + charRows[0, 0].ToString() + "/" +
                          charRows[2, 1].ToString() + charRows[1, 1].ToString() + charRows[0, 1].ToString() + "/" +
                          charRows[2, 2].ToString() + charRows[1, 2].ToString() + charRows[0, 2].ToString();
             }
@@ -221,7 +232,7 @@ namespace Day21Solution
         static string Flip(string input)
         {
             var rows = input.Split('/');
-            
+
             if (rows[0].Length == 2)
             {
                 return rows[1] + "/" + rows[0];
@@ -229,7 +240,7 @@ namespace Day21Solution
 
             return rows[2] + "/" + rows[1] + "/" + rows[0];
         }
-        
+
         static char[,] RotateClockwise(char[,] old, int arraySize)
         {
             var retVal = new char[3, 3];
