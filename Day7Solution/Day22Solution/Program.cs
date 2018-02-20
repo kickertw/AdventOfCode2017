@@ -17,7 +17,7 @@ namespace Day22Solution
 
         static void Main(string[] args)
         {
-            const int totalMoves = 10000;
+            const int totalMoves = 10000000;
 
             string[] lines = File.ReadAllLines(".\\input.txt");
 
@@ -28,10 +28,19 @@ namespace Day22Solution
 
             for (var ii = 0; ii < totalMoves; ii++)
             {
-                DoWork();
+                //Console.Clear();
+                DoWork(false);
+
+                // Debug only
+                //foreach (var row in matrix)
+                //{
+                //    Console.WriteLine(row.ToString());
+                //}
+                //Console.WriteLine(ii + " " + output);
+                //Console.ReadLine();
             }
 
-            // Part 1
+            // Part 1/2
             Console.WriteLine(infectionCount);
             Console.ReadLine();
         }
@@ -54,30 +63,97 @@ namespace Day22Solution
             currentPosition.Y++;
         }
 
-        static void DoWork()
+        static void DoWork(bool isPartOne = true)
         {
+            //var debug = "";
             var currentRow = matrix[currentPosition.X];
 
-            // 1. Turn (infected = right, clean = left)
-            facing = Turn(currentRow[currentPosition.Y] == '#' ? Direction.Right : Direction.Left);
-
-            // 2. infect/clean the node
-            if (currentRow[currentPosition.Y] == '#')
+            if (isPartOne)
             {
-                currentRow[currentPosition.Y] = '.';
+                // 1. Turn (infected = right, clean = left)
+                facing = Turn(currentRow[currentPosition.Y] == '#' ? Direction.Right : Direction.Left);
+
+                // 2. infect/clean the node
+                if (currentRow[currentPosition.Y] == '#')
+                {
+                    currentRow[currentPosition.Y] = '.';
+                }
+                else
+                {
+                    infectionCount++;
+                    currentRow[currentPosition.Y] = '#';
+                }
+
+                // 3. Move
+                Move();
             }
             else
             {
-                infectionCount++;
-                currentRow[currentPosition.Y] = '#';
+                //debug += $"Current Node [{currentRow[currentPosition.Y]}] - ";
+
+                // 1. Turn (clean = left/infected = right/flagged = reverse)
+                if (currentRow[currentPosition.Y] == '#')
+                {
+                    facing = Turn(Direction.Right);
+                }
+                else if (currentRow[currentPosition.Y] == '.')
+                {
+                    facing = Turn(Direction.Left);
+                }
+                else if (currentRow[currentPosition.Y] == 'F')
+                {
+                    facing = Turn(Direction.Reverse);
+                }
+
+                //debug += $" Facing [{facing.ToString()}] - ";
+
+                // 2. infect/clean the node
+                if (currentRow[currentPosition.Y] == '.')
+                {
+                    currentRow[currentPosition.Y] = 'W';
+                }
+                else if (currentRow[currentPosition.Y] == 'W')
+                {
+                    infectionCount++;
+                    currentRow[currentPosition.Y] = '#';
+                }
+                else if (currentRow[currentPosition.Y] == '#')
+                {
+                    currentRow[currentPosition.Y] = 'F';
+                }
+                else
+                {
+                    currentRow[currentPosition.Y] = '.';
+                }
+
+                //debug += $"Node changed to [{currentRow[currentPosition.Y]}] - ";
+
+                // 3. Move
+                Move();
+
+                //debug += $"Moved to Row [{currentPosition.X}] + Col [{currentPosition.Y}]";
             }
 
-            // 3. Move
-            Move();
+            //return debug;
         }
 
         static Direction Turn(Direction nextTurn)
         {
+            if (nextTurn == Direction.Reverse)
+            {
+                switch (facing)
+                {
+                    case Direction.Left:
+                        return Direction.Right;
+                    case Direction.Right:
+                        return Direction.Left;
+                    case Direction.Up:
+                        return Direction.Down;
+                    case Direction.Down:
+                        return Direction.Up;
+                }
+            }
+
             switch (facing)
             {
                 case Direction.Up:
@@ -124,6 +200,7 @@ namespace Day22Solution
         Up,
         Right,
         Down,
-        Left
+        Left,
+        Reverse
     }
 }
