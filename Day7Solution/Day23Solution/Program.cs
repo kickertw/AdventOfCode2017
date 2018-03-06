@@ -120,8 +120,6 @@ namespace Day18Solution
     {
         private static int mulCounter = 0;
 
-        //Part 2 only
-        static int a = 1, b = 79, c = 79, d = 2, e = 0, f = 1, g = 0, h = 0;
 
         static void Main(string[] args)
         {
@@ -132,7 +130,6 @@ namespace Day18Solution
 
             Part2Solution();
 
-            Console.WriteLine(h);
             Console.ReadLine();
         }
 
@@ -264,32 +261,37 @@ namespace Day18Solution
 
         private static void Part2Solution()
         {
-            b = 107900;
-            c = 124900;
+            // 907 Should be the answer
+            long b = 107900, c = 124900, h = 0;
 
-            while (true)
+            for (var ii = 0; ii < 17000; ii++)
             {
-                f = 1;
-                d = 2;
+                long g;
+                long f = 1;
+                long d = 2;
+
                 do
                 {
-                    e = 2;
+                    var e = 2;
                     do
                     {
                         g = d * e - b;
                         if (g == 0) f = 0;
                         e++;
-                        g = e - b;
 
+                        g = e - b;
                     } while (g != 0);
+
                     d++;
                     g = d - b;
+
                 } while (g != 0);
-                if (f == 0) h++;
-                g = b - c;
-                if (g == 0) return;
-                b += 17;
+
+                if (f == 0)
+                    h++;
             }
+
+            Console.WriteLine(h);
         }
 
 
